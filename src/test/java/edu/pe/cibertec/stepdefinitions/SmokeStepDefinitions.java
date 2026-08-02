@@ -2,12 +2,15 @@ package edu.pe.cibertec.stepdefinitions;
 
 import com.microsoft.playwright.Page;
 import edu.pe.cibertec.abilities.BrowseTheWebWithPlaywright;
+import edu.pe.cibertec.questions.DisplayedProducts;
+import edu.pe.cibertec.tasks.OpenTheStore;
 import io.cucumber.java.es.Cuando;
 import io.cucumber.java.es.Dado;
 import io.cucumber.java.es.Entonces;
 import net.serenitybdd.screenplay.actors.OnStage;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
+import static org.hamcrest.Matchers.*;
 
 public class SmokeStepDefinitions {
 
@@ -18,16 +21,16 @@ public class SmokeStepDefinitions {
 
     @Cuando("abre la pagina principal de la tienda")
     public void abreLaPaginaPrincipalDeLaTienda() {
-        Page page = BrowseTheWebWithPlaywright.as(OnStage.theActorInTheSpotlight()).getPage();
-        page.navigate("/");
-        page.waitForSelector("[data-test='product-name']");
+        OnStage.theActorInTheSpotlight().attemptsTo(
+                OpenTheStore.homePage()
+        );
     }
 
     @Entonces("deberia ver productos disponinles en el catalogo")
     public void deberiaVerProductosDisponinlesEnElCatalogo() {
-        Page page = BrowseTheWebWithPlaywright.as(OnStage.theActorInTheSpotlight()).getPage();
-        int cantidad = page.locator("[data-test='product-name']").count();
-        System.out.println("Cantidad de productos: " + cantidad);
-        assertThat(cantidad).isGreaterThan(0);
+        OnStage.theActorInTheSpotlight().should(
+                seeThat("la cantidad de productos",
+                        DisplayedProducts.count(), greaterThan(0))
+        );
     }
 }
