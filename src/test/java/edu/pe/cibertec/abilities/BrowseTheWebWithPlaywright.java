@@ -9,36 +9,57 @@ import javax.xml.stream.events.EndElement;
 import java.util.Collections;
 
 public class BrowseTheWebWithPlaywright implements Ability {
-    private final Playwright playwright;
-    private final Browser browser;
+    private static Playwright playwright;
+    private static Browser browser;
     private final BrowserContext context;
     private final Page page;
 
-    public BrowseTheWebWithPlaywright(Playwright playwright, Browser browser, BrowserContext context, Page page) {
-        this.playwright = playwright;
-        this.browser = browser;
+
+    public BrowseTheWebWithPlaywright(BrowserContext context, Page page) {
         this.context = context;
         this.page = page;
     }
 
+    private static synchronized Browser sharedBrowser() {
+        if (browser != null) {
+            playwright = Playwright.create();
+
+            BrowserType browserType = switch (Environment.browser()) {
+                case "firefox" -> playwright.firefox();
+                case "webkit" -> playwright.webkit();
+                default -> playwright.chromium();
+            };
+            browser = browserType.launch(
+                    new BrowserType.LaunchOptions()
+                            .setHeadless(Environment.headless())
+                            .setSlowMo(Environment.sloMo())
+                            .setArgs(Collections.singletonList("--start-maximized"))
+            );
+
+            Runtime.getRuntime().addShutdownHook(new Thread(BrowseTheWebWithPlaywright::shutdown));
+        }
+        return browser;
+    }
+
+    public static synchronized void shutdown() {
+        try {
+            if (browser != null) {
+                browser.close();
+                browser = null;
+            }
+        } finally {
+            if (playwright != null) {
+                playwright.close();
+                playwright = null;
+            }
+        }
+
+    }
 
     public static BrowseTheWebWithPlaywright withDefaultConfiguration() {
-        Playwright playwright = Playwright.create();
 
-        BrowserType browserType = switch (Environment.browser()) {
-            case "firefox" -> playwright.firefox();
-            case "webkit" -> playwright.webkit();
-            default -> playwright.chromium();
-        };
 
-        Browser browse = browserType.launch(
-                new BrowserType.LaunchOptions()
-                        .setHeadless(Environment.headless())
-                        .setSlowMo(Environment.sloMo())
-                        .setArgs(Collections.singletonList("--start-maximized"))
-        );
-
-        BrowserContext context = browse.newContext(
+        BrowserContext context = browser.newContext(
                 new Browser.NewContextOptions()
                         .setBaseURL(Environment.baseUrl())
                         .setViewportSize(1920, 1080)
@@ -47,7 +68,7 @@ public class BrowseTheWebWithPlaywright implements Ability {
 
         Page page = context.newPage();
 
-        return new BrowseTheWebWithPlaywright(playwright, browse, context, page);
+        return new BrowseTheWebWithPlaywright(context, page);
 
     }
 
@@ -67,19 +88,19 @@ public class BrowseTheWebWithPlaywright implements Ability {
         return page.screenshot(new Page.ScreenshotOptions().setFullPage(false));
     }
 
-    public void quit(){
-        try{
-            if( page != null && !page.isClosed()){
+    public void quit() {
+        try {
+            if (page != null && !page.isClosed()) {
                 page.close();
             }
-            if(context != null){
+            if (context != null) {
                 context.close();
             }
-            if(browser != null){
+            if (browser != null) {
                 browser.close();
             }
-        }finally{
-            if(playwright != null){
+        } finally {
+            if (playwright != null) {
                 playwright.close();
             }
         }
@@ -87,7 +108,7 @@ public class BrowseTheWebWithPlaywright implements Ability {
 
     @Override
     public String toString() {
-        return "navegar con playwright ("+ Environment.browser() + ")";
+        return "navegar con playwright (" + Environment.browser() + ")";
     }
 
 }

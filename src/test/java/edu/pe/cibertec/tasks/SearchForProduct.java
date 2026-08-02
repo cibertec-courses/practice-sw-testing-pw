@@ -24,14 +24,13 @@ public class SearchForProduct implements Task {
     @Step("{0} busca el prodcto '#termino'")
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
-                Enter.theValue(termino, HomePage.SEARCH_INPUT),
-                Click.on(HomePage.SEARCH_SUBMIT)
+                Enter.theValue(termino, HomePage.SEARCH_INPUT)
         );
         Page page = BrowseTheWebWithPlaywright.as(actor).getPage();
         page.waitForResponse(
                 response -> response.url().contains("/products/search")
                 && response.status() == 200,
-                () -> actor.attemptsTo(Click.on(HomePage.SEARCH_INPUT))
+                () -> actor.attemptsTo(Click.on(HomePage.SEARCH_SUBMIT))
         );
 
 

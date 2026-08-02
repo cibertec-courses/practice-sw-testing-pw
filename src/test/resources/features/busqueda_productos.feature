@@ -21,6 +21,6 @@ Característica: Busqueda de productos en el catalogo
       | Hammer      | Hammer      |
       | Screwdriver | Screwdriver |
 
-    Escenario: Bsuqueda sin coincidencias
-      Cuando busca el producto "asodunbasoucnoubnac"
-      Entonces deberia ver el mensaje no hay resultados
+  Escenario: Busqueda sin coincidencias
+    Cuando busca el producto "asodunbasoucnoubnac"
+    Entonces deberia ver el mensaje no hay resultados
