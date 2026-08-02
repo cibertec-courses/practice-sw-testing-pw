@@ -11,4 +11,7 @@ public class HomePage {
     public static final String SORT_SELECT = "data-test=\"sort\"";
     public static final String NAV_SIGN_IN = "data-test=\"nav-sign-in\"";
     public static final String PRODUCT_CARD = "a.card";
+
+    public static final String NO_RESULTS ="[data-test=\"no-results\"]";
+    public static final String SEARCH_TERM = "[data-test=\"search-term\"]";
 }
