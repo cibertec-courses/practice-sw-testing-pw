@@ -7,23 +7,51 @@
     <groupId>edu.pe.ciibertec</groupId>
     <artifactId>practice-sw-testing-pw</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
 
     <properties>
-        <maven.compiler.source>21</maven.compiler.source>
-        <maven.compiler.target>21</maven.compiler.target>
+        <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <serenity.version>4.1.20</serenity.version>
-        <playwright.version>1.45.1</playwright.version>
-        <junit.version>5.10.3</junit.version>
+        <cucumber.version>7.18.1</cucumber.version>
+        <junit.jupiter.version>5.10.3</junit.jupiter.version>
         <junit.platform.version>1.10.3</junit.platform.version>
-        <failsafe.version>3.2.5</failsafe.version>
+        <playwright.version>1.45.1</playwright.version>
+        <assertj.version>3.26.0</assertj.version>
+
+        <compiler.plugin.version>3.13.0</compiler.plugin.version>
+        <surefire.plugin.version>3.2.5</surefire.plugin.version>
+        <failsafe.plugin.version>3.2.5</failsafe.plugin.version>
 
         <tags></tags>
     </properties>
 
+    <!-- ================================================================
+         BOMs: alinean TODAS las versiones transitivas de cada familia.
+         Sin esto, Serenity trae un JUnit y Cucumber trae otro distinto.
+         ================================================================ -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.cucumber</groupId>
+                <artifactId>cucumber-bom</artifactId>
+                <version>${cucumber.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.jupiter.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
-        <!-- ===== Serenity BDD ===== -->
+        <!-- ===== Serenity BDD (no hay BOM: versión explícita por artefacto) ===== -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
@@ -54,20 +82,34 @@
             <version>${serenity.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- ===== Playwright ===== -->
         <dependency>
-            <groupId>com.microsoft.playwright</groupId>
-            <artifactId>playwright</artifactId>
-            <version>${playwright.version}</version>
+            <groupId>net.serenity-bdd</groupId>
+            <artifactId>serenity-single-page-report</artifactId>
+            <version>${serenity.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.13</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- ===== Cucumber (explícito: lo necesito para io.cucumber.java.es.*) ===== -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-java</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
             <scope>test</scope>
         </dependency>
 
-        <!-- ===== JUnit 5 ===== -->
+        <!-- ===== JUnit 5: Jupiter + Suite (esto resuelve el error rojo) ===== -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -78,21 +120,24 @@
         </dependency>
         <dependency>
             <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-suite-api</artifactId>
-            <version>1.10.3</version>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${junit.platform.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- ===== Playwright ===== -->
         <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-suite-engine</artifactId>
-            <version>1.10.3</version>
+            <groupId>com.microsoft.playwright</groupId>
+            <artifactId>playwright</artifactId>
+            <version>${playwright.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- ===== Utilidades ===== -->
+
+        <!-- ===== Aserciones ===== -->
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.26.0</version>
+            <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -102,17 +147,34 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.13.0</version>
+                <version>${compiler.plugin.version}</version>
                 <configuration>
                     <release>21</release>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
-            <!-- Ejecuta los runners en la fase 'verify' -->
+            <!-- ================================================================
+                 SUREFIRE: NO debe ejecutar los runners.
+                 Por defecto incluye **/Test*.java, y mi clase se llama
+                 TestRunner → la agarraría y correría la suite dos veces.
+                 ================================================================ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.plugin.version}</version>
+                <configuration>
+                    <skipTests>true</skipTests>
+                </configuration>
+            </plugin>
+
+            <!-- ================================================================
+                 FAILSAFE: este SÍ ejecuta los runners, en la fase verify.
+                 ================================================================ -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>${failsafe.version}</version>
+                <version>${failsafe.plugin.version}</version>
                 <configuration>
                     <includes>
                         <include>**/*Runner.java</include>
@@ -123,21 +185,23 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <id>run-acceptance-tests</id>
                         <goals>
                             <goal>integration-test</goal>
                             <goal>verify</goal>
                         </goals>
                     </execution>
                 </executions>
-             </plugin>
+            </plugin>
 
-            <!-- Genera el reporte HTML de Serenity -->
+            <!-- ===== Reporte HTML de Serenity ===== -->
             <plugin>
                 <groupId>net.serenity-bdd.maven.plugins</groupId>
                 <artifactId>serenity-maven-plugin</artifactId>
                 <version>${serenity.version}</version>
                 <configuration>
                     <tags>${tags}</tags>
+                    <reports>single-page-html</reports>
                 </configuration>
                 <executions>
                     <execution>

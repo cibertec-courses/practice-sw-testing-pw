@@ -1,6 +1,6 @@
 package edu.pe.cibertec.runners;
 
-import io.cu
+import io.cucumber.junit.platform.engine.Constants;
 import org.junit.platform.suite.api.ConfigurationParameter;
 import org.junit.platform.suite.api.IncludeEngines;
 import org.junit.platform.suite.api.SelectClasspathResource;
@@ -10,7 +10,10 @@ import org.junit.platform.suite.api.Suite;
 @IncludeEngines("cucumber")
 @SelectClasspathResource("features")
 @ConfigurationParameter(
-        key = Constants.GLU
-)
+        key = Constants.GLUE_PROPERTY_NAME,
+        value = "edu.pe.cibertec.stepdefinitions,edu.pe.cibertec.hooks")
+@ConfigurationParameter(
+        key = Constants.PLUGIN_PROPERTY_NAME,
+        value = "io.cucumber.core.plugin.SerenityReporterParallel")
 public class TestRunner {
 }
