@@ -21,7 +21,7 @@ public class BrowseTheWebWithPlaywright implements Ability {
     }
 
     private static synchronized Browser sharedBrowser() {
-        if (browser != null) {
+        if (browser == null) {
             playwright = Playwright.create();
 
             BrowserType browserType = switch (Environment.browser()) {
@@ -59,7 +59,7 @@ public class BrowseTheWebWithPlaywright implements Ability {
     public static BrowseTheWebWithPlaywright withDefaultConfiguration() {
 
 
-        BrowserContext context = browser.newContext(
+        BrowserContext context = sharedBrowser().newContext(
                 new Browser.NewContextOptions()
                         .setBaseURL(Environment.baseUrl())
                         .setViewportSize(1920, 1080)
@@ -89,21 +89,9 @@ public class BrowseTheWebWithPlaywright implements Ability {
     }
 
     public void quit() {
-        try {
-            if (page != null && !page.isClosed()) {
-                page.close();
-            }
-            if (context != null) {
-                context.close();
-            }
-            if (browser != null) {
-                browser.close();
-            }
-        } finally {
-            if (playwright != null) {
-                playwright.close();
-            }
-        }
+       if (context != null) {
+           context.close();
+       }
     }
 
     @Override

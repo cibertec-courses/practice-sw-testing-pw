@@ -27,9 +27,6 @@ public class Hooks {
 
     @After(order = 1)
     public void capturarEvidencie(Scenario scenario) {
-        if(!scenario.isFailed()) {
-            return;
-        }
         try{
             Files.createDirectories(EVIDENCE_DIR);
             for (Actor actor: cast.getActors()) {

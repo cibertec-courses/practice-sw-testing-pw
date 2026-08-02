@@ -212,6 +212,18 @@
                     <tags>${tags}</tags>
                     <reports>single-page-html</reports>
                 </configuration>
+                <!-- ================================================================
+                     El plugin necesita el generador en SU propio classpath.
+                     Tenerlo como dependencia de test no basta: sin esto sale
+                     "No report found on classpath with name single-page-html".
+                     ================================================================ -->
+                <dependencies>
+                    <dependency>
+                        <groupId>net.serenity-bdd</groupId>
+                        <artifactId>serenity-single-page-report</artifactId>
+                        <version>${serenity.version}</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>serenity-reports</id>
